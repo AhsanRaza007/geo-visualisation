@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import ReactDOMServer from 'react-dom/server';
 import { getData } from './api-client';
 import { MapContainer, TileLayer, GeoJSON } from 'react-leaflet'
@@ -10,13 +10,13 @@ function App() {
   const [users, setusers] = useState(null);
   const position = [12.9716, 77.5946] // center position for bangalore
 
-  let fetchAllData = async () =>{
+  let fetchAllData = useCallback(async () =>{
       let geoJsonData = await getData('areas');
       let usersData = await getData('users');
       let aggregatedData = aggregateUserDataByRegion(usersData.users);
       setusers(aggregatedData);
       setGeoData(geoJsonData);
-  }
+  }, []);
 
   const aggregateUserDataByRegion = (userData) => {
     let newData = {};
@@ -44,8 +44,8 @@ function App() {
   }
 
   useEffect(()=>{
-    fetchAllData()
-  }, [])
+    fetchAllData();
+  }, [fetchAllData]);
 
   let onEachArea = (area, layer) => {
       let popup = ReactDOMServer.renderToString(<Popup users={users[area.properties.area_id]} properties={area.properties}></Popup>)
